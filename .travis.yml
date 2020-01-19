@@ -6,4 +6,7 @@ php:
   # using major version aliases
   - 7.3
 
+before_script:
+  - composer install
+
 script: phpunit --coverage-text
