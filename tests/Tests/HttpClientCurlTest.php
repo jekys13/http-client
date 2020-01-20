@@ -20,7 +20,7 @@ class CurlHttpClientTest extends TestCase
     /**
      * @var string
      */
-    private static $address = 'localhost:8080';
+    private static $address = 'localhost:8181';
 
     /**
     * @var string
@@ -55,12 +55,40 @@ class CurlHttpClientTest extends TestCase
     {
         $path = dirname(__DIR__).'/http-server/';
         $command =  'php -S '.self::$address.' -t '.$path.' > /dev/null 2>&1 & echo $!; ';
+
         self::$process= exec($command);
 
         usleep(100000); //wait for server to get going*/
 
         self::$url = 'http://'.self::$address;
         self::$client = new Curl();
+    }
+
+    /**
+    * Test for class constructor
+    *
+    * @covers ::__construct()
+    *
+    * @return void
+    */
+    public function testConstructor(): void
+    {
+        $reflector = new ReflectionClass(Curl::class);
+
+        $property = $reflector->getProperty('curlOptions');
+        $property->setAccessible(true);
+
+        $stub = $this->getMockBuilder(Curl::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $stub->expects($this->once())
+            ->method('setOptions')
+            ->with($property->getValue(self::$client))
+            ->willReturn(true);
+
+        $constructor = $reflector->getConstructor();
+        $constructor->invoke($stub);
     }
 
     /**

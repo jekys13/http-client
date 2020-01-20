@@ -151,6 +151,8 @@ class Curl implements ClientInterface
     /**
      * Class object destructor
      *
+     * @codeCoverageIgnore
+     *
      * @return void
      */
     public function __destruct()
