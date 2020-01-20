@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/jekys13/http-client.svg?branch=master)](https://travis-ci.org/jekys13/http-client)
 [![Coverage Status](https://coveralls.io/repos/github/jekys13/http-client/badge.svg)](https://coveralls.io/github/jekys13/http-client)
-[![Latest Stable Version](https://poser.pugx.org/jekys/http-client/v/stable)](https://packagist.org/packages/jekys/http-client)
+![Packagist Version](https://img.shields.io/packagist/v/jekys/http-client?label=stable)
 [![License](https://poser.pugx.org/jekys/http-client/license)](https://packagist.org/packages/jekys/http-client)
 
 ## Install
