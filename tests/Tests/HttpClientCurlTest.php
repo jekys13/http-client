@@ -64,6 +64,18 @@ class CurlHttpClientTest extends TestCase
     }
 
     /**
+     * @covers ::setOptions
+     *
+     * @return void
+     */
+    public function testSetOptions()
+    {
+        $this->assertTrue(self::$client->setOptions([
+            CURLOPT_RETURNTRANSFER => true,
+        ]));
+    }
+
+    /**
      * Check if RuntimeException is thrown then wrong http method was called
      *
      * @covers ::__call()
@@ -126,7 +138,10 @@ class CurlHttpClientTest extends TestCase
         foreach ($this->methods as $method) {
             $response = self::$client->{$method}(
                 self::$url,
-                $this->testParams
+                $this->testParams,
+                [
+                    'User-Agent: phpUnit'
+                ]
             );
 
             $response = json_decode($response, true);

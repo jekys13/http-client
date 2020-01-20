@@ -47,8 +47,20 @@ class Curl implements ClientInterface
         $this->curl = curl_init();
 
         if (!empty($this->curlOptions)) {
-            curl_setopt_array($this->curl, $this->curlOptions);
+            $this->setOptions($this->curlOptions);
         }
+    }
+
+    /**
+     * Set cURL options
+     *
+     * @param array $options
+     *
+     * @return bool
+     */
+    public function setOptions(array $options): bool
+    {
+        return curl_setopt_array($this->curl, $options);
     }
 
     /**
