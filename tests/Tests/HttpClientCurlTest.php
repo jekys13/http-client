@@ -20,7 +20,7 @@ class CurlHttpClientTest extends TestCase
     /**
      * @var string
      */
-    private static $address = 'localhost:8080';
+    private static $address = 'localhost:8181';
 
     /**
     * @var string
@@ -55,12 +55,40 @@ class CurlHttpClientTest extends TestCase
     {
         $path = dirname(__DIR__).'/http-server/';
         $command =  'php -S '.self::$address.' -t '.$path.' > /dev/null 2>&1 & echo $!; ';
+
         self::$process= exec($command);
 
         usleep(100000); //wait for server to get going*/
 
         self::$url = 'http://'.self::$address;
         self::$client = new Curl();
+    }
+
+    /**
+    * Test for class constructor
+    *
+    * @covers ::__construct()
+    *
+    * @return void
+    */
+    public function testConstructor(): void
+    {
+        $reflector = new ReflectionClass(Curl::class);
+
+        $property = $reflector->getProperty('curlOptions');
+        $property->setAccessible(true);
+
+        $stub = $this->getMockBuilder(Curl::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $stub->expects($this->once())
+            ->method('setOptions')
+            ->with($property->getValue(self::$client))
+            ->willReturn(true);
+
+        $constructor = $reflector->getConstructor();
+        $constructor->invoke($stub);
     }
 
     /**
@@ -127,6 +155,37 @@ class CurlHttpClientTest extends TestCase
     }
 
     /**
+     * Check if client sended correct method and raw data in params
+     *
+     * @covers ::sendRequest
+     *
+     * @return void
+     */
+    public function testSendRequestWithRawData()
+    {
+        foreach ($this->methods as $method) {
+
+            //No raw data for GET method
+            if ($method == 'GET') {
+                continue;
+            }
+
+            $response = self::$client->sendRequest(
+                $method,
+                self::$url,
+                json_encode($this->testParams),
+                [],
+                true
+            );
+
+            $response = json_decode($response, true);
+
+            $this->assertEquals($method, $response['method']);
+            $this->assertEquals([json_encode($this->testParams) => ''], $response['params']);
+        }
+    }
+
+    /**
      * Check shortcuts for methods
      *
      * @covers ::__call()
@@ -148,6 +207,37 @@ class CurlHttpClientTest extends TestCase
 
             $this->assertEquals($method, $response['method']);
             $this->assertEquals($this->testParams, $response['params']);
+        }
+    }
+
+    /**
+     * Check shortcuts for methods with raw data in params
+     *
+     * @covers ::__call()
+     *
+     * @return void
+     */
+    public function testShortuctsWithRawData(): void
+    {
+        foreach ($this->methods as $method) {
+            //No raw data for GET method
+            if ($method == 'GET') {
+                continue;
+            }
+
+            $response = self::$client->{$method}(
+                self::$url,
+                json_encode($this->testParams),
+                [
+                    'User-Agent: phpUnit'
+                ],
+                true
+            );
+
+            $response = json_decode($response, true);
+
+            $this->assertEquals($method, $response['method']);
+            $this->assertEquals([json_encode($this->testParams) => ''], $response['params']);
         }
     }
 
