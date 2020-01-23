@@ -87,6 +87,7 @@ class Curl implements ClientInterface
         $url = $arguments[0];
         $params = [];
         $headers = [];
+        $rawData = false;
 
         if (!empty($arguments[1])) {
             $params = $arguments[1];
@@ -96,7 +97,11 @@ class Curl implements ClientInterface
             $headers = $arguments[2];
         }
 
-        return $this->sendRequest($name, $url, $params, $headers);
+        if (!empty($arguments[3])) {
+            $rawData = $arguments[3];
+        }
+
+        return $this->sendRequest($name, $url, $params, $headers, $rawData);
     }
 
     /**
@@ -104,32 +109,46 @@ class Curl implements ClientInterface
      *
      * @param string $method
      * @param string $url
-     * @param array|null $params
+     * @param mixed|null $params
      * @param array|null $headers
-     *
+     * @param bool $rawData
      * @return string
      */
-    public function sendRequest(string $method, string $url, ?array $params = [], ?array $headers = []): string
+    public function sendRequest(string $method, string $url, $params = [], ?array $headers = [], bool $rawData = false): string
     {
-        $params = http_build_query($params);
+        $preparedParams = [];
+
+        if (!empty($params) && is_array($params)) {
+            $preparedParams = http_build_query($params);
+        }
 
         switch (strtoupper($method)) {
             case 'GET':
                 curl_setopt($this->curl, CURLOPT_POST, 0);
                 curl_setopt($this->curl, CURLOPT_POSTFIELDS, []);
-                $url .= '?'.$params;
+                $url .= '?'.$preparedParams;
 
             break;
 
             case 'POST':
                 curl_setopt($this->curl, CURLOPT_POST, 1);
-                curl_setopt($this->curl, CURLOPT_POSTFIELDS, $params);
+
+                if ($rawData) {
+                    curl_setopt($this->curl, CURLOPT_POSTFIELDS, $params);
+                } else {
+                    curl_setopt($this->curl, CURLOPT_POSTFIELDS, $preparedParams);
+                }
 
             break;
 
             default:
                 curl_setopt($this->curl, CURLOPT_POST, 0);
-                curl_setopt($this->curl, CURLOPT_POSTFIELDS, $params);
+
+                if ($rawData) {
+                    curl_setopt($this->curl, CURLOPT_POSTFIELDS, $params);
+                } else {
+                    curl_setopt($this->curl, CURLOPT_POSTFIELDS, $preparedParams);
+                }
 
             break;
         }
